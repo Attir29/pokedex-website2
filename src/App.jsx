@@ -83,7 +83,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center w-full min-h-screen bg-gray-900 text-gray-100">
+    <div className="flex flex-col items-center w-full min-h-screen bg-gray-900 text-gray-100">
       <Navbar
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -91,25 +91,24 @@ function App() {
       />
 
       {/* LIST SECTION */}
-      <section className="pb-11 pt-36 flex flex-col justify-center items-center">
+      <section className="pb-11 pt-24 sm:pt-36 flex flex-col justify-center items-center">
         {loading ? (
           <p>Loading Pokémon...</p>
         ) : (
           <>
-            <div className="mb-6">
+            <div className="w-full overflow-x-auto px-3">
               <TypeFilter
                 selectedTypes={selectedTypes}
                 onTypeToggle={handleTypeToggle}
                 onClearFilters={handleClearFilters}
               />
             </div>
-
-            <div className="w-[736px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 mt-30">
+            <div className="w-full max-w-[736px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
               {paginated.length > 0 ? (
                 paginated.map((p) => (
                   <div
                     key={p.id}
-                    className="w-full  bg-gray-800 p-4 rounded-lg shadow-md text-center cursor-pointer hover:scale-105 active:scale-95 transition-all hover:bg-gray-700"
+                    className="w-full bg-gray-800 p-3 sm:p-4 rounded-lg shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all hover:bg-gray-700"
                     onClick={() => setSelectedPokemon(p)}
                   >
                     <img
@@ -130,7 +129,7 @@ function App() {
                   </div>
                 ))
               ) : (
-                <p>No Pokémon found 😢</p>
+                <p>No Pokémon found</p>
               )}
             </div>
 
@@ -160,7 +159,7 @@ function App() {
       {/* DETAIL POPUP */}
       {selectedPokemon && (
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
-          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full relative text-gray-200">
+          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-sm mx-auto relative text-gray-200">
             <button
               className="absolute top-2 right-2 text-gray-300 cursor-pointer"
               onClick={() => setSelectedPokemon(null)}
@@ -236,7 +235,7 @@ function App() {
                 {favorites.map((p) => (
                   <div
                     key={p.id}
-                    className="bg-gray-700 p-3 rounded-lg flex gap-3 cursor-pointer"
+                    className="bg-gray-700 hover:bg-gray-600 p-3 rounded-lg flex gap-3 cursor-pointer"
                     onClick={() => {
                       setSelectedPokemon(p);
                       setShowFavorites(false);
@@ -246,15 +245,14 @@ function App() {
                       src={p.sprites.other["official-artwork"].front_default}
                       width="70"
                     />
-                    <div>
+                    <div className="flex items-center justify-between w-full">
                       <h3 className="capitalize text-lg font-bold">{p.name}</h3>
-
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           toggleFavorite(p);
                         }}
-                        className="text-red-400 underline cursor-pointer hover:text-red-600"
+                        className="bg-red-600 hover:bg-red-400 px-4 py-2 rounded-lg text-white cursor-pointer"
                       >
                         Remove
                       </button>

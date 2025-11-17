@@ -46,7 +46,7 @@ export const TypeFilter = ({
   onClearFilters = () => {},
 }) => {
   return (
-    <div className="space-y-3 max-w-[736px] absolute left-0 right-0 mx-auto bg-gray-800 p-4 rounded-lg shadow-md">
+    <div className="space-y-3 max-w-[736px] bg-gray-800 p-4 rounded-lg shadow-md w-full">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Filter by Type</h2>
 
