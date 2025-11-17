@@ -1,6 +1,6 @@
 export default function Navbar({ searchTerm, setSearchTerm, setShowFavorites }) {
   return (
-    <nav className="w-full bg-gray-900 shadow-md py-4 top-0 fixed">
+    <nav className="w-full bg-gray-900 shadow-md py-4 top-0 fixed z-50">
       <div className="max-w-md mx-auto text-center">
         <h1 className="text-2xl font-bold mb-3 text-red-600">Pokédex</h1>
 

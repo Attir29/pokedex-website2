@@ -1,42 +1,52 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Navbar from "./components/navBar";
+import Navbar from "./components/Navbar";
 
 function App() {
-  const [pokemons, setPokemons] = useState([]);
+  const [allPokemons, setAllPokemons] = useState([]);  
   const [loading, setLoading] = useState(true);
+
   const [page, setPage] = useState(1);
+  const perPage = 20;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPokemon, setSelectedPokemon] = useState(null);
 
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
 
+  // Fetch seluruh pokemon sekali saja
   useEffect(() => {
-    fetchPokemons();
-  }, [page]);
+    fetchAllPokemons();
+  }, []);
 
-  const fetchPokemons = async () => {
+  const fetchAllPokemons = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://pokeapi.co/api/v2/pokemon?limit=20&offset=${(page - 1) * 20}`
+      const res = await axios.get(
+        "https://pokeapi.co/api/v2/pokemon?limit=1300"
       );
 
-      const details = await Promise.all(
-        response.data.results.map((pokemon) => axios.get(pokemon.url))
+      const detailData = await Promise.all(
+        res.data.results.map((p) => axios.get(p.url))
       );
 
-      setPokemons(details.map((res) => res.data));
+      setAllPokemons(detailData.map((r) => r.data));
     } catch (err) {
-      console.error("Error fetching Pokémon:", err);
+      console.error("Error:", err);
     }
     setLoading(false);
   };
 
-  const filteredPokemons = pokemons.filter((p) =>
+  // FILTER
+  const filtered = allPokemons.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // PAGINATION fallback jika tidak search
+  const paginated = searchTerm
+    ? filtered
+    : filtered.slice((page - 1) * perPage, page * perPage);
 
   const toggleFavorite = (pokemon) => {
     const exists = favorites.find((f) => f.id === pokemon.id);
@@ -59,14 +69,15 @@ function App() {
         setShowFavorites={setShowFavorites}
       />
 
-      {loading ? (
-        <p>Loading Pokémon...</p>
-      ) : (
-        <>
-          <section className="pb-11 pt-36 flex flex-col justify-center items-center">
+      {/* LIST SECTION */}
+      <section className="pb-11 pt-36 flex flex-col justify-center items-center">
+        {loading ? (
+          <p>Loading Pokémon...</p>
+        ) : (
+          <>
             <div className="grid grid-cols-4 gap-4 p-4">
-              {filteredPokemons.length > 0 ? (
-                filteredPokemons.map((p) => (
+              {paginated.length > 0 ? (
+                paginated.map((p) => (
                   <div
                     key={p.id}
                     className="bg-gray-800 p-3 rounded-lg shadow-md text-center cursor-pointer"
@@ -92,30 +103,33 @@ function App() {
               )}
             </div>
 
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                disabled={page === 1}
-                className="bg-gray-700 px-3 py-1 rounded disabled:opacity-50 text-gray-200"
-              >
-                Previous
-              </button>
-              <span>Page {page}</span>
-              <button
-                onClick={() => setPage((prev) => prev + 1)}
-                className="bg-gray-700 px-3 py-1 rounded text-gray-200"
-              >
-                Next
-              </button>
-            </div>
-          </section>
-        </>
-      )}
+            {/* PAGINATION (hanya tampil jika tidak search) */}
+            {!searchTerm && (
+              <div className="mt-4 flex items-center gap-3">
+                <button
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={page === 1}
+                  className="bg-gray-700 px-3 py-1 rounded disabled:opacity-50 text-gray-200"
+                >
+                  Previous
+                </button>
+                <span>Page {page}</span>
+                <button
+                  onClick={() => setPage((prev) => prev + 1)}
+                  className="bg-gray-700 px-3 py-1 rounded text-gray-200"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </section>
 
-      {/* DETAIL CARD POPUP */}
+      {/* DETAIL POPUP */}
       {selectedPokemon && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full relative text-gray-200">
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full relative text-gray-200">
             <button
               className="absolute top-2 right-2 text-gray-300"
               onClick={() => setSelectedPokemon(null)}
@@ -123,48 +137,26 @@ function App() {
               ✕
             </button>
 
-            <h2 className="text-2xl font-bold capitalize text-center mb-4 text-white">
+            <h2 className="text-2xl font-bold capitalize text-center mb-4">
               {selectedPokemon.name}
             </h2>
 
             <img
-              src={
-                selectedPokemon.sprites.other["official-artwork"].front_default
-              }
-              alt={selectedPokemon.name}
-              className="mx-auto mb-4"
+              src={selectedPokemon.sprites.other["official-artwork"].front_default}
               width="180"
+              className="mx-auto mb-4"
             />
 
-            <p className="mb-2">
-              <strong>Types:</strong>{" "}
-              {selectedPokemon.types.map((t) => t.type.name).join(", ")}
-            </p>
-
-            <p className="mb-2">
-              <strong>Height:</strong> {selectedPokemon.height}
-            </p>
-
-            <p className="mb-2">
-              <strong>Weight:</strong> {selectedPokemon.weight}
-            </p>
-
-            <p className="mb-2">
-              <strong>Abilities:</strong>{" "}
-              {selectedPokemon.abilities.map((a) => a.ability.name).join(", ")}
-            </p>
-
-            <p className="mb-4">
-              <strong>Base Experience:</strong>{" "}
-              {selectedPokemon.base_experience}
-            </p>
+            <p><strong>Types:</strong> {selectedPokemon.types.map(t => t.type.name).join(", ")}</p>
+            <p><strong>Height:</strong> {selectedPokemon.height}</p>
+            <p><strong>Weight:</strong> {selectedPokemon.weight}</p>
+            <p><strong>Abilities:</strong> {selectedPokemon.abilities.map(a => a.ability.name).join(", ")}</p>
+            <p className="mb-4"><strong>Base Exp:</strong> {selectedPokemon.base_experience}</p>
 
             <button
               onClick={() => toggleFavorite(selectedPokemon)}
               className={`px-4 py-2 rounded-lg w-full ${
-                isFavorite(selectedPokemon)
-                  ? "bg-red-500"
-                  : "bg-red-700"
+                isFavorite(selectedPokemon) ? "bg-red-500" : "bg-red-700"
               }`}
             >
               {isFavorite(selectedPokemon)
@@ -174,12 +166,11 @@ function App() {
           </div>
         </div>
       )}
-      {/* END DETAIL CARD POPUP */}
 
-      {/* FAVORITE CARD POPUP */}
+      {/* FAVORITE POPUP */}
       {showFavorites && (
-        <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full relative text-gray-200 max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full relative text-gray-200 max-h-[80vh] overflow-y-auto">
             <button
               className="absolute top-2 right-2 text-gray-300"
               onClick={() => setShowFavorites(false)}
@@ -203,14 +194,12 @@ function App() {
                     }}
                   >
                     <img
-                      src={
-                        p.sprites.other["official-artwork"].front_default
-                      }
+                      src={p.sprites.other["official-artwork"].front_default}
                       width="70"
-                      alt={p.name}
                     />
                     <div>
                       <h3 className="capitalize text-lg font-bold">{p.name}</h3>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -228,7 +217,7 @@ function App() {
           </div>
         </div>
       )}
-      {/* END FAVORITE CARD POPUP */}
+
     </div>
   );
 }
