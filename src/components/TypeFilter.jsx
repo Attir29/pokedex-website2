@@ -46,21 +46,21 @@ export const TypeFilter = ({
   onClearFilters = () => {},
 }) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 max-w-[736px] absolute left-0 right-0 mx-auto bg-gray-800 p-4 rounded-lg shadow-md">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Filter by Type</h2>
 
         {selectedTypes.length > 0 && (
           <button
             onClick={onClearFilters}
-            className="text-sm text-gray-600 hover:text-gray-900 underline"
+            className="text-sm text-white hover:text-blue-600 underline cursor-pointer"
           >
             Clear All
           </button>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 justify-center">
         {POKEMON_TYPES.map((type) => {
           const isSelected = selectedTypes.includes(type);
           return (

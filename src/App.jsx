@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "./components/Navbar";
+import { TypeFilter } from "./components/TypeFilter";
 
 function App() {
-  const [allPokemons, setAllPokemons] = useState([]);  
+  const [allPokemons, setAllPokemons] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
@@ -14,6 +15,7 @@ function App() {
 
   const [favorites, setFavorites] = useState([]);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState([]);
 
   // Fetch seluruh pokemon sekali saja
   useEffect(() => {
@@ -39,9 +41,18 @@ function App() {
   };
 
   // FILTER
-  const filtered = allPokemons.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = allPokemons.filter((pokemon) => {
+    const matchesSearch = pokemon.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
+    const pokemonTypes = pokemon.types.map((t) => t.type.name);
+    const matchesType =
+      selectedTypes.length === 0 ||
+      selectedTypes.some((type) => pokemonTypes.includes(type));
+
+    return matchesSearch && matchesType;
+  });
 
   // PAGINATION fallback jika tidak search
   const paginated = searchTerm
@@ -61,6 +72,16 @@ function App() {
     return favorites.some((f) => f.id === pokemon.id);
   };
 
+  const handleTypeToggle = (type) => {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedTypes([]);
+  };
+
   return (
     <div className="flex flex-col justify-center items-center w-full min-h-screen bg-gray-900 text-gray-100">
       <Navbar
@@ -75,27 +96,37 @@ function App() {
           <p>Loading Pokémon...</p>
         ) : (
           <>
-            <div className="grid grid-cols-4 gap-4 p-4">
+            <div className="mb-6">
+              <TypeFilter
+                selectedTypes={selectedTypes}
+                onTypeToggle={handleTypeToggle}
+                onClearFilters={handleClearFilters}
+              />
+            </div>
+
+            <div className="w-[736px] grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 mt-30">
               {paginated.length > 0 ? (
                 paginated.map((p) => (
                   <div
                     key={p.id}
-                    className="bg-gray-800 p-3 rounded-lg shadow-md text-center cursor-pointer"
+                    className="w-full  bg-gray-800 p-4 rounded-lg shadow-md text-center cursor-pointer hover:scale-105 active:scale-95 transition-all hover:bg-gray-700"
                     onClick={() => setSelectedPokemon(p)}
                   >
-                    <h3 className="capitalize font-bold text-lg mb-2 text-white">
-                      {p.name}
-                    </h3>
                     <img
                       src={p.sprites.other["official-artwork"].front_default}
                       alt={p.name}
                       width="120"
                       className="mx-auto"
                     />
-                    <p className="text-gray-300">
-                      <strong>Types:</strong>{" "}
-                      {p.types.map((t) => t.type.name).join(", ")}
-                    </p>
+                    <div className="flex flex-col items-start">
+                      <p>{p.id.toString().padStart(3, "0")}</p>
+                      <h3 className="capitalize font-bold text-lg mb-2 text-white">
+                        {p.name}
+                      </h3>
+                      <p className="text-gray-300 capitalize">
+                        {p.types.map((t) => t.type.name).join(", ")}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -109,14 +140,14 @@ function App() {
                 <button
                   onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                   disabled={page === 1}
-                  className="bg-gray-700 px-3 py-1 rounded disabled:opacity-50 text-gray-200"
+                  className="bg-gray-700 px-3 py-1 rounded disabled:opacity-50 text-gray-200 cursor-pointer disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <span>Page {page}</span>
                 <button
                   onClick={() => setPage((prev) => prev + 1)}
-                  className="bg-gray-700 px-3 py-1 rounded text-gray-200"
+                  className="bg-gray-700 px-3 py-1 rounded text-gray-200 cursor-pointer disabled:cursor-not-allowed"
                 >
                   Next
                 </button>
@@ -131,7 +162,7 @@ function App() {
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
           <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full relative text-gray-200">
             <button
-              className="absolute top-2 right-2 text-gray-300"
+              className="absolute top-2 right-2 text-gray-300 cursor-pointer"
               onClick={() => setSelectedPokemon(null)}
             >
               ✕
@@ -142,21 +173,37 @@ function App() {
             </h2>
 
             <img
-              src={selectedPokemon.sprites.other["official-artwork"].front_default}
+              src={
+                selectedPokemon.sprites.other["official-artwork"].front_default
+              }
               width="180"
               className="mx-auto mb-4"
             />
 
-            <p><strong>Types:</strong> {selectedPokemon.types.map(t => t.type.name).join(", ")}</p>
-            <p><strong>Height:</strong> {selectedPokemon.height}</p>
-            <p><strong>Weight:</strong> {selectedPokemon.weight}</p>
-            <p><strong>Abilities:</strong> {selectedPokemon.abilities.map(a => a.ability.name).join(", ")}</p>
-            <p className="mb-4"><strong>Base Exp:</strong> {selectedPokemon.base_experience}</p>
+            <p>
+              <strong>Types:</strong>{" "}
+              {selectedPokemon.types.map((t) => t.type.name).join(", ")}
+            </p>
+            <p>
+              <strong>Height:</strong> {selectedPokemon.height}
+            </p>
+            <p>
+              <strong>Weight:</strong> {selectedPokemon.weight}
+            </p>
+            <p>
+              <strong>Abilities:</strong>{" "}
+              {selectedPokemon.abilities.map((a) => a.ability.name).join(", ")}
+            </p>
+            <p className="mb-4">
+              <strong>Base Exp:</strong> {selectedPokemon.base_experience}
+            </p>
 
             <button
               onClick={() => toggleFavorite(selectedPokemon)}
-              className={`px-4 py-2 rounded-lg w-full ${
-                isFavorite(selectedPokemon) ? "bg-red-500" : "bg-red-700"
+              className={`px-4 py-2 rounded-lg w-full cursor-pointer hover:scale-102 transition-transform active:scale-98 ${
+                isFavorite(selectedPokemon)
+                  ? "bg-gray-200 text-black"
+                  : "bg-red-700"
               }`}
             >
               {isFavorite(selectedPokemon)
@@ -172,13 +219,15 @@ function App() {
         <div className="fixed inset-0 bg-black/70 flex justify-center items-center p-4 z-50">
           <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full relative text-gray-200 max-h-[80vh] overflow-y-auto">
             <button
-              className="absolute top-2 right-2 text-gray-300"
+              className="absolute top-2 right-2 text-gray-300 cursor-pointer"
               onClick={() => setShowFavorites(false)}
             >
               ✕
             </button>
 
-            <h2 className="text-2xl font-bold text-center mb-4">Favorite Pokémon</h2>
+            <h2 className="text-2xl font-bold text-center mb-4">
+              Favorite Pokémon
+            </h2>
 
             {favorites.length === 0 ? (
               <p className="text-center text-gray-400">No favorites added.</p>
@@ -205,7 +254,7 @@ function App() {
                           e.stopPropagation();
                           toggleFavorite(p);
                         }}
-                        className="text-red-400 underline"
+                        className="text-red-400 underline cursor-pointer hover:text-red-600"
                       >
                         Remove
                       </button>
@@ -217,7 +266,6 @@ function App() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
