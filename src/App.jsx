@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Navbar from "./components/navBar.jsx";
+import Navbar from "./components/Navbar.jsx";
 import { TypeFilter } from "./components/TypeFilter";
 
 function App() {
