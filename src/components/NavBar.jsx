@@ -1,4 +1,4 @@
-export default function Navbar({
+function Navbar({
   searchTerm,
   setSearchTerm,
   setShowFavorites,
@@ -36,3 +36,5 @@ export default function Navbar({
     </nav>
   );
 }
+
+export default Navbar;
