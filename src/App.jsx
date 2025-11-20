@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/NavBar.jsx";
 import { TypeFilter } from "./components/TypeFilter";
 
 function App() {
@@ -96,7 +96,7 @@ function App() {
           <p>Loading Pokémon...</p>
         ) : (
           <>
-            <div className="w-full overflow-x-auto px-3">
+            <div className="w-full overflow-x-auto px-3 mt-10 md:mt-0">
               <TypeFilter
                 selectedTypes={selectedTypes}
                 onTypeToggle={handleTypeToggle}
