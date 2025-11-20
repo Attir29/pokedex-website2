@@ -17,7 +17,6 @@ function App() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedTypes, setSelectedTypes] = useState([]);
 
-  // Fetch seluruh pokemon sekali saja
   useEffect(() => {
     fetchAllPokemons();
   }, []);
